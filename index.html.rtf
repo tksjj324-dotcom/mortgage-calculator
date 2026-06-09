@@ -1,0 +1,105 @@
+{\rtf1\ansi\ansicpg949\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww28260\viewh17660\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html lang="en">\
+<head>\
+  <meta charset="UTF-8" />\
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\
+  <title>Mortgage Calculator</title>\
+  <style>\
+    body \{ font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; \}\
+    .container \{ max-width: 600px; margin: 40px auto; background: white; padding: 24px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1); \}\
+    h1 \{ text-align: center; margin-bottom: 24px; \}\
+    label \{ display: block; margin-top: 14px; margin-bottom: 6px; font-weight: bold; \}\
+    input \{ width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 6px; font-size: 15px; \}\
+    .button-row \{ display: flex; gap: 10px; margin-top: 22px; \}\
+    button \{ flex: 1; padding: 12px; font-size: 15px; border: none; border-radius: 6px; cursor: pointer; \}\
+    .calculate-btn \{ background-color: #2563eb; color: white; \}\
+    .clear-btn \{ background-color: #e5e7eb; color: #111827; \}\
+    .result \{ margin-top: 24px; padding: 16px; background: #eef6ff; border-left: 5px solid #2563eb; border-radius: 6px; \}\
+    .error \{ margin-top: 18px; padding: 12px; background: #ffe8e8; border-left: 5px solid #dc2626; color: #991b1b; border-radius: 6px; \}\
+    .small-note \{ margin-top: 16px; color: #555; font-size: 13px; \}\
+    .result-line \{ margin: 8px 0; \}\
+  </style>\
+</head>\
+<body>\
+  <div class="container">\
+    <h1>Mortgage Calculator</h1>\
+    <label for="homePrice">Home Price ($)</label>\
+    <input type="number" id="homePrice" placeholder="e.g. 400000" />\
+    <label for="downPayment">Down Payment ($)</label>\
+    <input type="number" id="downPayment" placeholder="e.g. 80000" />\
+    <label for="interestRate">Annual Interest Rate (%)</label>\
+    <input type="number" id="interestRate" step="0.01" placeholder="e.g. 6.50" />\
+    <label for="loanYears">Loan Term (Years)</label>\
+    <input type="number" id="loanYears" placeholder="e.g. 30" />\
+    <div class="button-row">\
+      <button class="calculate-btn" onclick="calculateMortgage()">Calculate</button>\
+      <button class="clear-btn" onclick="clearFields()">Clear</button>\
+    </div>\
+    <div id="messageArea"></div>\
+    <div class="small-note">This calculator estimates principal and interest only. Property tax, insurance, HOA, and PMI are not included.</div>\
+  </div>\
+\
+  <script>\
+    function formatCurrency(value) \{\
+      return value.toLocaleString("en-US", \{ style: "currency", currency: "USD" \});\
+    \}\
+    function calculateMortgage() \{\
+      const homePrice = parseFloat(document.getElementById("homePrice").value);\
+      const downPayment = parseFloat(document.getElementById("downPayment").value);\
+      const annualRate = parseFloat(document.getElementById("interestRate").value);\
+      const loanYears = parseInt(document.getElementById("loanYears").value);\
+      const messageArea = document.getElementById("messageArea");\
+      messageArea.innerHTML = "";\
+\
+      if (isNaN(homePrice) || isNaN(downPayment) || isNaN(annualRate) || isNaN(loanYears)) \{\
+        showError("Please enter valid numeric values in all fields."); return;\
+      \}\
+      if (homePrice <= 0) \{ showError("Home price must be greater than zero."); return; \}\
+      if (downPayment < 0) \{ showError("Down payment cannot be negative."); return; \}\
+      if (downPayment >= homePrice) \{ showError("Down payment must be less than home price."); return; \}\
+      if (annualRate < 0) \{ showError("Interest rate cannot be negative."); return; \}\
+      if (loanYears <= 0) \{ showError("Loan term must be greater than zero."); return; \}\
+\
+      const loanAmount = homePrice - downPayment;\
+      const monthlyRate = annualRate / 100 / 12;\
+      const numberOfPayments = loanYears * 12;\
+      let monthlyPayment;\
+\
+      if (monthlyRate === 0) \{\
+        monthlyPayment = loanAmount / numberOfPayments;\
+      \} else \{\
+        monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);\
+      \}\
+\
+      const totalPayment = monthlyPayment * numberOfPayments;\
+      const totalInterest = totalPayment - loanAmount;\
+\
+      messageArea.innerHTML = `\
+        <div class="result">\
+          <div class="result-line"><strong>Loan Amount:</strong> $\{formatCurrency(loanAmount)\}</div>\
+          <div class="result-line"><strong>Monthly Payment:</strong> $\{formatCurrency(monthlyPayment)\}</div>\
+          <div class="result-line"><strong>Total Payment:</strong> $\{formatCurrency(totalPayment)\}</div>\
+          <div class="result-line"><strong>Total Interest:</strong> $\{formatCurrency(totalInterest)\}</div>\
+        </div>\
+      `;\
+    \}\
+    function showError(message) \{\
+      document.getElementById("messageArea").innerHTML = `<div class="error">$\{message\}</div>`;\
+    \}\
+    function clearFields() \{\
+      document.getElementById("homePrice").value = "";\
+      document.getElementById("downPayment").value = "";\
+      document.getElementById("interestRate").value = "";\
+      document.getElementById("loanYears").value = "";\
+      document.getElementById("messageArea").innerHTML = "";\
+    \}\
+  </script>\
+</body>\
+</html>}

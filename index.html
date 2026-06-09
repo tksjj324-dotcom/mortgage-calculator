@@ -1,105 +1,114 @@
-{\rtf1\ansi\ansicpg949\cocoartf2867
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww28260\viewh17660\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-
-\f0\fs24 \cf0 <!DOCTYPE html>\
-<html lang="en">\
-<head>\
-  <meta charset="UTF-8" />\
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\
-  <title>Mortgage Calculator</title>\
-  <style>\
-    body \{ font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; \}\
-    .container \{ max-width: 600px; margin: 40px auto; background: white; padding: 24px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1); \}\
-    h1 \{ text-align: center; margin-bottom: 24px; \}\
-    label \{ display: block; margin-top: 14px; margin-bottom: 6px; font-weight: bold; \}\
-    input \{ width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 6px; font-size: 15px; \}\
-    .button-row \{ display: flex; gap: 10px; margin-top: 22px; \}\
-    button \{ flex: 1; padding: 12px; font-size: 15px; border: none; border-radius: 6px; cursor: pointer; \}\
-    .calculate-btn \{ background-color: #2563eb; color: white; \}\
-    .clear-btn \{ background-color: #e5e7eb; color: #111827; \}\
-    .result \{ margin-top: 24px; padding: 16px; background: #eef6ff; border-left: 5px solid #2563eb; border-radius: 6px; \}\
-    .error \{ margin-top: 18px; padding: 12px; background: #ffe8e8; border-left: 5px solid #dc2626; color: #991b1b; border-radius: 6px; \}\
-    .small-note \{ margin-top: 16px; color: #555; font-size: 13px; \}\
-    .result-line \{ margin: 8px 0; \}\
-  </style>\
-</head>\
-<body>\
-  <div class="container">\
-    <h1>Mortgage Calculator</h1>\
-    <label for="homePrice">Home Price ($)</label>\
-    <input type="number" id="homePrice" placeholder="e.g. 400000" />\
-    <label for="downPayment">Down Payment ($)</label>\
-    <input type="number" id="downPayment" placeholder="e.g. 80000" />\
-    <label for="interestRate">Annual Interest Rate (%)</label>\
-    <input type="number" id="interestRate" step="0.01" placeholder="e.g. 6.50" />\
-    <label for="loanYears">Loan Term (Years)</label>\
-    <input type="number" id="loanYears" placeholder="e.g. 30" />\
-    <div class="button-row">\
-      <button class="calculate-btn" onclick="calculateMortgage()">Calculate</button>\
-      <button class="clear-btn" onclick="clearFields()">Clear</button>\
-    </div>\
-    <div id="messageArea"></div>\
-    <div class="small-note">This calculator estimates principal and interest only. Property tax, insurance, HOA, and PMI are not included.</div>\
-  </div>\
-\
-  <script>\
-    function formatCurrency(value) \{\
-      return value.toLocaleString("en-US", \{ style: "currency", currency: "USD" \});\
-    \}\
-    function calculateMortgage() \{\
-      const homePrice = parseFloat(document.getElementById("homePrice").value);\
-      const downPayment = parseFloat(document.getElementById("downPayment").value);\
-      const annualRate = parseFloat(document.getElementById("interestRate").value);\
-      const loanYears = parseInt(document.getElementById("loanYears").value);\
-      const messageArea = document.getElementById("messageArea");\
-      messageArea.innerHTML = "";\
-\
-      if (isNaN(homePrice) || isNaN(downPayment) || isNaN(annualRate) || isNaN(loanYears)) \{\
-        showError("Please enter valid numeric values in all fields."); return;\
-      \}\
-      if (homePrice <= 0) \{ showError("Home price must be greater than zero."); return; \}\
-      if (downPayment < 0) \{ showError("Down payment cannot be negative."); return; \}\
-      if (downPayment >= homePrice) \{ showError("Down payment must be less than home price."); return; \}\
-      if (annualRate < 0) \{ showError("Interest rate cannot be negative."); return; \}\
-      if (loanYears <= 0) \{ showError("Loan term must be greater than zero."); return; \}\
-\
-      const loanAmount = homePrice - downPayment;\
-      const monthlyRate = annualRate / 100 / 12;\
-      const numberOfPayments = loanYears * 12;\
-      let monthlyPayment;\
-\
-      if (monthlyRate === 0) \{\
-        monthlyPayment = loanAmount / numberOfPayments;\
-      \} else \{\
-        monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);\
-      \}\
-\
-      const totalPayment = monthlyPayment * numberOfPayments;\
-      const totalInterest = totalPayment - loanAmount;\
-\
-      messageArea.innerHTML = `\
-        <div class="result">\
-          <div class="result-line"><strong>Loan Amount:</strong> $\{formatCurrency(loanAmount)\}</div>\
-          <div class="result-line"><strong>Monthly Payment:</strong> $\{formatCurrency(monthlyPayment)\}</div>\
-          <div class="result-line"><strong>Total Payment:</strong> $\{formatCurrency(totalPayment)\}</div>\
-          <div class="result-line"><strong>Total Interest:</strong> $\{formatCurrency(totalInterest)\}</div>\
-        </div>\
-      `;\
-    \}\
-    function showError(message) \{\
-      document.getElementById("messageArea").innerHTML = `<div class="error">$\{message\}</div>`;\
-    \}\
-    function clearFields() \{\
-      document.getElementById("homePrice").value = "";\
-      document.getElementById("downPayment").value = "";\
-      document.getElementById("interestRate").value = "";\
-      document.getElementById("loanYears").value = "";\
-      document.getElementById("messageArea").innerHTML = "";\
-    \}\
-  </script>\
-</body>\
-</html>}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.2">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Mortgage Calculator&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>body { font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.container { max-width: 600px; margin: 40px auto; background: white; padding: 24px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1); }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>h1 { text-align: center; margin-bottom: 24px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>label { display: block; margin-top: 14px; margin-bottom: 6px; font-weight: bold; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 6px; font-size: 15px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.button-row { display: flex; gap: 10px; margin-top: 22px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>button { flex: 1; padding: 12px; font-size: 15px; border: none; border-radius: 6px; cursor: pointer; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.calculate-btn { background-color: #2563eb; color: white; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.clear-btn { background-color: #e5e7eb; color: #111827; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.result { margin-top: 24px; padding: 16px; background: #eef6ff; border-left: 5px solid #2563eb; border-radius: 6px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.error { margin-top: 18px; padding: 12px; background: #ffe8e8; border-left: 5px solid #dc2626; color: #991b1b; border-radius: 6px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.small-note { margin-top: 16px; color: #555; font-size: 13px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>.result-line { margin: 8px 0; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="container"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1&gt;Mortgage Calculator&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;label for="homePrice"&gt;Home Price ($)&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="number" id="homePrice" placeholder="e.g. 400000" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;label for="downPayment"&gt;Down Payment ($)&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="number" id="downPayment" placeholder="e.g. 80000" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;label for="interestRate"&gt;Annual Interest Rate (%)&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="number" id="interestRate" step="0.01" placeholder="e.g. 6.50" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;label for="loanYears"&gt;Loan Term (Years)&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;input type="number" id="loanYears" placeholder="e.g. 30" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="button-row"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="calculate-btn" onclick="calculateMortgage()"&gt;Calculate&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="clear-btn" onclick="clearFields()"&gt;Clear&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="messageArea"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="small-note"&gt;This calculator estimates principal and interest only. Property tax, insurance, HOA, and PMI are not included.&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function formatCurrency(value) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return value.toLocaleString("en-US", { style: "currency", currency: "USD" });</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function calculateMortgage() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const homePrice = parseFloat(document.getElementById("homePrice").value);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const downPayment = parseFloat(document.getElementById("downPayment").value);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const annualRate = parseFloat(document.getElementById("interestRate").value);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const loanYears = parseInt(document.getElementById("loanYears").value);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const messageArea = document.getElementById("messageArea");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>messageArea.innerHTML = "";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (isNaN(homePrice) || isNaN(downPayment) || isNaN(annualRate) || isNaN(loanYears)) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>showError("Please enter valid numeric values in all fields."); return;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (homePrice &lt;= 0) { showError("Home price must be greater than zero."); return; }</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (downPayment &lt; 0) { showError("Down payment cannot be negative."); return; }</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (downPayment &gt;= homePrice) { showError("Down payment must be less than home price."); return; }</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (annualRate &lt; 0) { showError("Interest rate cannot be negative."); return; }</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (loanYears &lt;= 0) { showError("Loan term must be greater than zero."); return; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const loanAmount = homePrice - downPayment;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const monthlyRate = annualRate / 100 / 12;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const numberOfPayments = loanYears * 12;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>let monthlyPayment;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (monthlyRate === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>monthlyPayment = loanAmount / numberOfPayments;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const totalPayment = monthlyPayment * numberOfPayments;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const totalInterest = totalPayment - loanAmount;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>messageArea.innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="result"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="result-line"&gt;&lt;strong&gt;Loan Amount:&lt;/strong&gt; ${formatCurrency(loanAmount)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="result-line"&gt;&lt;strong&gt;Monthly Payment:&lt;/strong&gt; ${formatCurrency(monthlyPayment)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="result-line"&gt;&lt;strong&gt;Total Payment:&lt;/strong&gt; ${formatCurrency(totalPayment)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="result-line"&gt;&lt;strong&gt;Total Interest:&lt;/strong&gt; ${formatCurrency(totalInterest)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function showError(message) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("messageArea").innerHTML = `&lt;div class="error"&gt;${message}&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function clearFields() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("homePrice").value = "";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("downPayment").value = "";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("interestRate").value = "";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("loanYears").value = "";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById("messageArea").innerHTML = "";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>

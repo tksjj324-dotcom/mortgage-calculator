@@ -1,98 +1,575 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mortgage Calculator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Estate Investment Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
-    .container { max-width: 600px; margin: 40px auto; background: white; padding: 24px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1); }
-    h1 { text-align: center; margin-bottom: 24px; }
-    label { display: block; margin-top: 14px; margin-bottom: 6px; font-weight: bold; }
-    input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 6px; font-size: 15px; }
-    .button-row { display: flex; gap: 10px; margin-top: 22px; }
-    button { flex: 1; padding: 12px; font-size: 15px; border: none; border-radius: 6px; cursor: pointer; }
-    .calculate-btn { background-color: #2563eb; color: white; }
-    .clear-btn { background-color: #e5e7eb; color: #111827; }
-    .result { margin-top: 24px; padding: 16px; background: #eef6ff; border-left: 5px solid #2563eb; border-radius: 6px; }
-    .error { margin-top: 18px; padding: 12px; background: #ffe8e8; border-left: 5px solid #dc2626; color: #991b1b; border-radius: 6px; }
-    .small-note { margin-top: 16px; color: #555; font-size: 13px; }
-    .result-line { margin: 8px 0; }
+    :root {
+      --bg: #ffffff;
+      --bg2: #f7f7f5;
+      --bg3: #f0efe9;
+      --text: #1a1a1a;
+      --text2: #6b6b6b;
+      --border: rgba(0,0,0,0.12);
+      --green: #1D9E75;
+      --red: #D85A30;
+      --green-bg: #E1F5EE;
+      --green-text: #0F6E56;
+      --red-bg: #FCEBEB;
+      --red-text: #A32D2D;
+      --amber-bg: #FAEEDA;
+      --amber-text: #854F0B;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a;
+        --bg2: #252523;
+        --bg3: #2e2e2b;
+        --text: #f0efe9;
+        --text2: #a0a09a;
+        --border: rgba(255,255,255,0.12);
+        --green: #5DCAA5;
+        --red: #F0997B;
+        --green-bg: #085041;
+        --green-text: #9FE1CB;
+        --red-bg: #501313;
+        --red-text: #F7C1C1;
+        --amber-bg: #412402;
+        --amber-text: #FAC775;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg3);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .header {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      padding: 1.25rem 2rem;
+    }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+    .container { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 400;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      color: var(--text2);
+      transition: background 0.15s, color 0.15s;
+    }
+    .tab-btn.active {
+      background: var(--bg3);
+      color: var(--text);
+      font-weight: 500;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .metric-card {
+      background: var(--bg2);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+    .metric-val { font-size: 22px; font-weight: 600; }
+    .metric-val.pos { color: var(--green); }
+    .metric-val.neg { color: var(--red); }
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      margin-top: 1.5rem;
+    }
+    .section-title:first-child { margin-top: 0; }
+    .field-row { margin-bottom: 10px; }
+    .field-row label {
+      display: block;
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+    .field-row input, .field-row select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg2);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .field-row input:focus, .field-row select:focus {
+      border-color: rgba(0,0,0,0.3);
+      background: var(--bg);
+    }
+    .calc-btn {
+      width: 100%;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: opacity 0.15s;
+    }
+    .calc-btn:hover { opacity: 0.85; }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 0.5px solid var(--border);
+      font-size: 14px;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-key { color: var(--text2); }
+    .result-val { font-weight: 500; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-left: 6px;
+    }
+    .badge-success { background: var(--green-bg); color: var(--green-text); }
+    .badge-warn { background: var(--amber-bg); color: var(--amber-text); }
+    .badge-danger { background: var(--red-bg); color: var(--red-text); }
+    .amort-wrap {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .amort-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .amort-table th {
+      position: sticky; top: 0;
+      background: var(--bg2);
+      padding: 8px 12px;
+      font-weight: 500;
+      font-size: 11px;
+      color: var(--text2);
+      text-align: right;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .amort-table th:first-child { text-align: left; }
+    .amort-table td { padding: 7px 12px; border-bottom: 0.5px solid var(--border); text-align: right; }
+    .amort-table td:first-child { text-align: left; }
+    .sens-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .sens-table th { padding: 8px 10px; background: var(--bg2); font-weight: 500; font-size: 12px; color: var(--text2); text-align: center; border: 0.5px solid var(--border); }
+    .sens-table td { text-align: center; padding: 8px 10px; border: 0.5px solid var(--border); }
+    .sens-table .row-label { text-align: left; font-weight: 500; color: var(--text2); background: var(--bg2); }
+    .cell-pos { background: var(--green-bg); color: var(--green-text); font-weight: 500; }
+    .cell-neg { background: var(--red-bg); color: var(--red-text); font-weight: 500; }
+    .cell-neutral { background: var(--bg2); font-weight: 600; }
+    .divider { height: 0.5px; background: var(--border); margin: 1.5rem 0; }
+    .hint { font-size: 12px; color: var(--text2); margin-top: 6px; }
+    .placeholder { font-size: 13px; color: var(--text2); padding: 0.5rem 0; }
+    @media (max-width: 640px) {
+      .grid2 { grid-template-columns: 1fr; }
+      .header { padding: 1rem; }
+      .container { padding: 0 1rem; }
+      .tab-btn { font-size: 12px; padding: 8px 6px; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Mortgage Calculator</h1>
-    <label for="homePrice">Home Price ($)</label>
-    <input type="number" id="homePrice" placeholder="e.g. 400000" />
-    <label for="downPayment">Down Payment ($)</label>
-    <input type="number" id="downPayment" placeholder="e.g. 80000" />
-    <label for="interestRate">Annual Interest Rate (%)</label>
-    <input type="number" id="interestRate" step="0.01" placeholder="e.g. 6.50" />
-    <label for="loanYears">Loan Term (Years)</label>
-    <input type="number" id="loanYears" placeholder="e.g. 30" />
-    <div class="button-row">
-      <button class="calculate-btn" onclick="calculateMortgage()">Calculate</button>
-      <button class="clear-btn" onclick="clearFields()">Clear</button>
-    </div>
-    <div id="messageArea"></div>
-    <div class="small-note">This calculator estimates principal and interest only. Property tax, insurance, HOA, and PMI are not included.</div>
+
+<div class="header">
+  <h1>Real Estate Investment Calculator</h1>
+  <p>Mortgage · NOI · IRR / NPV · Sensitivity Analysis</p>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('mortgage')">Mortgage</button>
+    <button class="tab-btn" onclick="switchTab('noi')">NOI Analysis</button>
+    <button class="tab-btn" onclick="switchTab('irr')">IRR / NPV</button>
+    <button class="tab-btn" onclick="switchTab('sensitivity')">Sensitivity</button>
   </div>
 
-  <script>
-    function formatCurrency(value) {
-      return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
-    }
-    function calculateMortgage() {
-      const homePrice = parseFloat(document.getElementById("homePrice").value);
-      const downPayment = parseFloat(document.getElementById("downPayment").value);
-      const annualRate = parseFloat(document.getElementById("interestRate").value);
-      const loanYears = parseInt(document.getElementById("loanYears").value);
-      const messageArea = document.getElementById("messageArea");
-      messageArea.innerHTML = "";
+  <!-- TAB 1: Mortgage -->
+  <div id="tab-mortgage" class="tab-panel active">
+    <div class="grid2">
+      <div class="card">
+        <p class="section-title">Loan Parameters</p>
+        <div class="field-row"><label>Home Price ($)</label><input type="number" id="m-price" value="500000"></div>
+        <div class="field-row"><label>Down Payment ($)</label><input type="number" id="m-down" value="100000"></div>
+        <div class="field-row"><label>Annual Interest Rate (%)</label><input type="number" id="m-rate" value="6.5" step="0.1"></div>
+        <div class="field-row"><label>Loan Term (Years)</label><input type="number" id="m-years" value="30"></div>
+        <button class="calc-btn" onclick="calcMortgage()">Calculate</button>
+      </div>
+      <div class="card">
+        <p class="section-title">Results</p>
+        <div id="m-results"><p class="placeholder">Enter values and click Calculate.</p></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1.25rem">
+      <p class="section-title">Annual Amortization Schedule</p>
+      <div class="amort-wrap" id="amort-wrap">
+        <p style="padding:1rem;font-size:13px;color:var(--text2)">Results will appear after calculation.</p>
+      </div>
+    </div>
+  </div>
 
-      if (isNaN(homePrice) || isNaN(downPayment) || isNaN(annualRate) || isNaN(loanYears)) {
-        showError("Please enter valid numeric values in all fields."); return;
-      }
-      if (homePrice <= 0) { showError("Home price must be greater than zero."); return; }
-      if (downPayment < 0) { showError("Down payment cannot be negative."); return; }
-      if (downPayment >= homePrice) { showError("Down payment must be less than home price."); return; }
-      if (annualRate < 0) { showError("Interest rate cannot be negative."); return; }
-      if (loanYears <= 0) { showError("Loan term must be greater than zero."); return; }
+  <!-- TAB 2: NOI -->
+  <div id="tab-noi" class="tab-panel">
+    <div class="grid2">
+      <div class="card">
+        <p class="section-title">Income</p>
+        <div class="field-row"><label>Annual Rental Income ($)</label><input type="number" id="n-rent" value="60000"></div>
+        <div class="field-row"><label>Other Income (parking, storage, etc.) ($)</label><input type="number" id="n-other" value="3000"></div>
+        <div class="field-row"><label>Vacancy Rate (%)</label><input type="number" id="n-vacancy" value="5" step="0.5"></div>
+        <p class="section-title">Operating Expenses</p>
+        <div class="field-row"><label>Property Tax ($)</label><input type="number" id="n-tax" value="6000"></div>
+        <div class="field-row"><label>Insurance ($)</label><input type="number" id="n-insurance" value="2000"></div>
+        <div class="field-row"><label>Maintenance &amp; Repairs ($)</label><input type="number" id="n-maintenance" value="4000"></div>
+        <div class="field-row"><label>Property Management ($)</label><input type="number" id="n-mgmt" value="3000"></div>
+        <div class="field-row"><label>Other Operating Expenses ($)</label><input type="number" id="n-other-exp" value="1000"></div>
+        <div class="field-row"><label>Property Value ($) — for Cap Rate</label><input type="number" id="n-propval" value="500000"></div>
+        <button class="calc-btn" onclick="calcNOI()">Calculate</button>
+      </div>
+      <div class="card">
+        <p class="section-title">NOI Results</p>
+        <div id="noi-results"><p class="placeholder">Enter values and click Calculate.</p></div>
+      </div>
+    </div>
+  </div>
 
-      const loanAmount = homePrice - downPayment;
-      const monthlyRate = annualRate / 100 / 12;
-      const numberOfPayments = loanYears * 12;
-      let monthlyPayment;
-
-      if (monthlyRate === 0) {
-        monthlyPayment = loanAmount / numberOfPayments;
-      } else {
-        monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-      }
-
-      const totalPayment = monthlyPayment * numberOfPayments;
-      const totalInterest = totalPayment - loanAmount;
-
-      messageArea.innerHTML = `
-        <div class="result">
-          <div class="result-line"><strong>Loan Amount:</strong> ${formatCurrency(loanAmount)}</div>
-          <div class="result-line"><strong>Monthly Payment:</strong> ${formatCurrency(monthlyPayment)}</div>
-          <div class="result-line"><strong>Total Payment:</strong> ${formatCurrency(totalPayment)}</div>
-          <div class="result-line"><strong>Total Interest:</strong> ${formatCurrency(totalInterest)}</div>
+  <!-- TAB 3: IRR/NPV -->
+  <div id="tab-irr" class="tab-panel">
+    <div class="grid2">
+      <div class="card">
+        <p class="section-title">Investment Parameters</p>
+        <div class="field-row"><label>Initial Equity Investment ($)</label><input type="number" id="i-init" value="120000"></div>
+        <div class="field-row"><label>Annual NOI ($)</label><input type="number" id="i-noi" value="40000"></div>
+        <div class="field-row"><label>Annual Debt Service ($)</label><input type="number" id="i-debt" value="25000"></div>
+        <div class="field-row"><label>Holding Period (Years)</label><input type="number" id="i-hold" value="10"></div>
+        <div class="field-row"><label>Annual NOI Growth Rate (%)</label><input type="number" id="i-growth" value="2" step="0.5"></div>
+        <div class="field-row"><label>Exit Cap Rate (%)</label><input type="number" id="i-exitcap" value="6.5" step="0.5"></div>
+        <div class="field-row"><label>Discount Rate for NPV (%)</label><input type="number" id="i-disc" value="8" step="0.5"></div>
+        <div class="field-row"><label>Selling Costs (%)</label><input type="number" id="i-sellcost" value="3" step="0.5"></div>
+        <button class="calc-btn" onclick="calcIRR()">Calculate</button>
+      </div>
+      <div class="card">
+        <p class="section-title">IRR / NPV Results</p>
+        <div id="irr-results"><p class="placeholder">Enter values and click Calculate.</p></div>
+        <div style="margin-top:1.25rem;position:relative;height:220px">
+          <canvas id="cf-chart" role="img" aria-label="Annual cash flow bar chart">Cash flow chart</canvas>
         </div>
-      `;
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Sensitivity -->
+  <div id="tab-sensitivity" class="tab-panel">
+    <div class="grid2">
+      <div class="card">
+        <p class="section-title">Base Parameters</p>
+        <div class="field-row"><label>Initial Equity Investment ($)</label><input type="number" id="s-init" value="120000"></div>
+        <div class="field-row"><label>Base Annual NOI ($)</label><input type="number" id="s-noi" value="40000"></div>
+        <div class="field-row"><label>Annual Debt Service ($)</label><input type="number" id="s-debt" value="25000"></div>
+        <div class="field-row"><label>Holding Period (Years)</label><input type="number" id="s-hold" value="10"></div>
+        <div class="field-row"><label>Base NOI Growth Rate (%)</label><input type="number" id="s-growth" value="2" step="0.5"></div>
+        <div class="field-row"><label>Exit Cap Rate (%)</label><input type="number" id="s-exitcap" value="6.5" step="0.5"></div>
+        <div class="field-row"><label>Selling Costs (%)</label><input type="number" id="s-sellcost" value="3" step="0.5"></div>
+        <button class="calc-btn" onclick="calcSensitivity()">Run Analysis</button>
+      </div>
+      <div class="card">
+        <p class="section-title">Analysis Variables</p>
+        <div class="field-row">
+          <label>X-Axis Variable</label>
+          <select id="s-xvar">
+            <option value="vacancy">Vacancy Rate change (%p)</option>
+            <option value="rentgrowth">NOI Growth Rate change (%p)</option>
+            <option value="exitcap">Exit Cap Rate change (%p)</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label>Y-Axis Variable</label>
+          <select id="s-yvar">
+            <option value="noi">NOI change (%)</option>
+            <option value="rentgrowth" selected>NOI Growth Rate change (%p)</option>
+            <option value="exitcap">Exit Cap Rate change (%p)</option>
+          </select>
+        </div>
+        <p class="hint">* X and Y variables must be different.</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="card">
+      <p class="section-title">IRR Sensitivity Analysis Table</p>
+      <div id="sens-table-wrap">
+        <p class="placeholder">Enter parameters above and click Run Analysis.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  let cfChartInst = null;
+
+  function switchTab(name) {
+    ['mortgage','noi','irr','sensitivity'].forEach((n, i) => {
+      document.querySelectorAll('.tab-btn')[i].classList.toggle('active', n === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  function fmt(n, dec = 0) {
+    return n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+  function fmtPct(n) { return n.toFixed(2) + '%'; }
+
+  /* ── MORTGAGE ── */
+  function calcMortgage() {
+    const price = +document.getElementById('m-price').value;
+    const down  = +document.getElementById('m-down').value;
+    const rate  = +document.getElementById('m-rate').value / 100 / 12;
+    const n     = +document.getElementById('m-years').value * 12;
+    const loan  = price - down;
+    if (loan <= 0 || rate <= 0 || n <= 0) { alert('Please enter valid values.'); return; }
+    const pmt        = loan * (rate * Math.pow(1 + rate, n)) / (Math.pow(1 + rate, n) - 1);
+    const totalPaid  = pmt * n;
+    const totalInt   = totalPaid - loan;
+    const ltv        = loan / price * 100;
+
+    document.getElementById('m-results').innerHTML = `
+      <div class="result-row"><span class="result-key">Loan Amount</span><span class="result-val">$${fmt(loan)}</span></div>
+      <div class="result-row"><span class="result-key">Monthly Payment</span><span class="result-val" style="font-size:18px;color:var(--green)">$${fmt(pmt, 2)}</span></div>
+      <div class="result-row"><span class="result-key">Annual Payment</span><span class="result-val">$${fmt(pmt * 12, 2)}</span></div>
+      <div class="result-row"><span class="result-key">Total Payments</span><span class="result-val">$${fmt(totalPaid, 0)}</span></div>
+      <div class="result-row"><span class="result-key">Total Interest</span><span class="result-val">$${fmt(totalInt, 0)}</span></div>
+      <div class="result-row"><span class="result-key">LTV Ratio</span><span class="result-val">${fmtPct(ltv)}</span></div>
+    `;
+
+    let html = '<table class="amort-table"><thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Annual Payment</th><th>Remaining Balance</th></tr></thead><tbody>';
+    let bal = loan;
+    for (let y = 1; y <= +document.getElementById('m-years').value; y++) {
+      let yPrin = 0, yInt = 0;
+      for (let m = 0; m < 12; m++) {
+        const intPay  = bal * rate;
+        const prinPay = pmt - intPay;
+        yInt  += intPay;
+        yPrin += prinPay;
+        bal   -= prinPay;
+      }
+      if (bal < 0) bal = 0;
+      html += `<tr><td>Year ${y}</td><td>$${fmt(yPrin,0)}</td><td>$${fmt(yInt,0)}</td><td>$${fmt(yPrin+yInt,0)}</td><td>$${fmt(bal,0)}</td></tr>`;
     }
-    function showError(message) {
-      document.getElementById("messageArea").innerHTML = `<div class="error">${message}</div>`;
+    html += '</tbody></table>';
+    document.getElementById('amort-wrap').innerHTML = html;
+  }
+
+  /* ── NOI ── */
+  function calcNOI() {
+    const rent      = +document.getElementById('n-rent').value;
+    const other     = +document.getElementById('n-other').value;
+    const vacancy   = +document.getElementById('n-vacancy').value / 100;
+    const tax       = +document.getElementById('n-tax').value;
+    const ins       = +document.getElementById('n-insurance').value;
+    const maint     = +document.getElementById('n-maintenance').value;
+    const mgmt      = +document.getElementById('n-mgmt').value;
+    const otherExp  = +document.getElementById('n-other-exp').value;
+    const propVal   = +document.getElementById('n-propval').value;
+
+    const grossIncome     = rent + other;
+    const effectiveIncome = grossIncome * (1 - vacancy);
+    const totalExp        = tax + ins + maint + mgmt + otherExp;
+    const noi             = effectiveIncome - totalExp;
+    const capRate         = propVal > 0 ? noi / propVal * 100 : 0;
+    const expRatio        = effectiveIncome > 0 ? totalExp / effectiveIncome * 100 : 0;
+
+    const badge     = capRate >= 6 ? 'badge-success' : capRate >= 4 ? 'badge-warn' : 'badge-danger';
+    const badgeText = capRate >= 6 ? 'Good' : capRate >= 4 ? 'Fair' : 'Low';
+
+    document.getElementById('noi-results').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+        <div class="metric-card"><div class="metric-label">NOI</div><div class="metric-val ${noi >= 0 ? 'pos' : 'neg'}">$${fmt(noi, 0)}</div></div>
+        <div class="metric-card"><div class="metric-label">Cap Rate <span class="badge ${badge}">${badgeText}</span></div><div class="metric-val">${fmtPct(capRate)}</div></div>
+      </div>
+      <div class="result-row"><span class="result-key">Gross Potential Income</span><span class="result-val">$${fmt(grossIncome, 0)}</span></div>
+      <div class="result-row"><span class="result-key">Vacancy Loss (${(vacancy*100).toFixed(1)}%)</span><span class="result-val" style="color:var(--red)">-$${fmt(grossIncome * vacancy, 0)}</span></div>
+      <div class="result-row"><span class="result-key">Effective Gross Income (EGI)</span><span class="result-val">$${fmt(effectiveIncome, 0)}</span></div>
+      <div class="result-row"><span class="result-key">Total Operating Expenses</span><span class="result-val" style="color:var(--red)">-$${fmt(totalExp, 0)}</span></div>
+      <div class="result-row"><span class="result-key" style="font-weight:500">Net Operating Income (NOI)</span><span class="result-val" style="font-size:16px;color:${noi>=0?'var(--green)':'var(--red)'}">$${fmt(noi, 0)}</span></div>
+      <div class="result-row"><span class="result-key">Operating Expense Ratio (OER)</span><span class="result-val">${fmtPct(expRatio)}</span></div>
+    `;
+  }
+
+  /* ── IRR HELPERS ── */
+  function computeIRR(cashflows) {
+    let lo = -0.9999, hi = 10, mid, v;
+    for (let i = 0; i < 300; i++) {
+      mid = (lo + hi) / 2;
+      v = cashflows.reduce((s, cf, t) => s + cf / Math.pow(1 + mid, t), 0);
+      if (Math.abs(v) < 0.001) break;
+      if (v > 0) lo = mid; else hi = mid;
     }
-    function clearFields() {
-      document.getElementById("homePrice").value = "";
-      document.getElementById("downPayment").value = "";
-      document.getElementById("interestRate").value = "";
-      document.getElementById("loanYears").value = "";
-      document.getElementById("messageArea").innerHTML = "";
+    return mid;
+  }
+
+  function buildCashFlows(init, noi, debt, hold, growth, exitCap, sellCost) {
+    const cfs = [-init];
+    for (let t = 1; t <= hold; t++) {
+      const curNoi = noi * Math.pow(1 + growth / 100, t - 1);
+      let cf = curNoi - debt;
+      if (t === hold) {
+        const exitNoi   = noi * Math.pow(1 + growth / 100, t - 1);
+        const exitPrice = exitNoi / ((exitCap > 0 ? exitCap : 0.001) / 100);
+        cf += exitPrice * (1 - sellCost / 100);
+      }
+      cfs.push(cf);
     }
-  </script>
+    return cfs;
+  }
+
+  /* ── IRR/NPV ── */
+  function calcIRR() {
+    const init     = +document.getElementById('i-init').value;
+    const noi      = +document.getElementById('i-noi').value;
+    const debt     = +document.getElementById('i-debt').value;
+    const hold     = +document.getElementById('i-hold').value;
+    const growth   = +document.getElementById('i-growth').value;
+    const exitCap  = +document.getElementById('i-exitcap').value;
+    const disc     = +document.getElementById('i-disc').value / 100;
+    const sellCost = +document.getElementById('i-sellcost').value;
+
+    const cfs           = buildCashFlows(init, noi, debt, hold, growth, exitCap, sellCost);
+    const irr           = computeIRR(cfs) * 100;
+    const npv           = cfs.reduce((s, cf, t) => s + cf / Math.pow(1 + disc, t), 0);
+    const equityMult    = cfs.slice(1).reduce((a, b) => a + b, 0) / init;
+    const exitNoi       = noi * Math.pow(1 + growth / 100, hold - 1);
+    const exitPrice     = exitNoi / ((exitCap > 0 ? exitCap : 0.001) / 100);
+    const dscr          = (noi > 0 && debt > 0) ? noi / debt : 0;
+
+    const irrBadge = irr >= 15 ? 'badge-success' : irr >= 10 ? 'badge-warn' : 'badge-danger';
+    const irrText  = irr >= 15 ? 'Strong' : irr >= 10 ? 'Fair' : 'Weak';
+    const npvBadge = npv >= 0 ? 'badge-success' : 'badge-danger';
+
+    document.getElementById('irr-results').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+        <div class="metric-card"><div class="metric-label">IRR <span class="badge ${irrBadge}">${irrText}</span></div><div class="metric-val ${irr>=0?'pos':'neg'}">${fmtPct(irr)}</div></div>
+        <div class="metric-card"><div class="metric-label">NPV <span class="badge ${npvBadge}">${npv>=0?'Positive':'Negative'}</span></div><div class="metric-val ${npv>=0?'pos':'neg'}">$${fmt(npv,0)}</div></div>
+        <div class="metric-card"><div class="metric-label">Equity Multiple</div><div class="metric-val">${equityMult.toFixed(2)}x</div></div>
+        <div class="metric-card"><div class="metric-label">DSCR</div><div class="metric-val ${dscr>=1.25?'pos':dscr<1?'neg':''}">${dscr.toFixed(2)}x</div></div>
+      </div>
+      <div class="result-row"><span class="result-key">Exit Sale Price (est.)</span><span class="result-val">$${fmt(exitPrice,0)}</span></div>
+      <div class="result-row"><span class="result-key">Holding Period</span><span class="result-val">${hold} years</span></div>
+    `;
+
+    const labels = cfs.map((_, i) => i === 0 ? 'Initial' : 'Yr ' + i);
+    const colors = cfs.map((v, i) => i === 0 ? '#888780' : v >= 0 ? '#1D9E75' : '#D85A30');
+    if (cfChartInst) cfChartInst.destroy();
+    cfChartInst = new Chart(document.getElementById('cf-chart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ label: 'Cash Flow ($)', data: cfs, backgroundColor: colors, borderRadius: 4 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { callback: v => '$' + fmt(v, 0) }, grid: { color: 'rgba(128,128,128,0.1)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  /* ── SENSITIVITY ── */
+  function calcSensitivity() {
+    const init     = +document.getElementById('s-init').value;
+    const baseNoi  = +document.getElementById('s-noi').value;
+    const debt     = +document.getElementById('s-debt').value;
+    const hold     = +document.getElementById('s-hold').value;
+    const baseGr   = +document.getElementById('s-growth').value;
+    const baseEC   = +document.getElementById('s-exitcap').value;
+    const sellCost = +document.getElementById('s-sellcost').value;
+    const xvar     = document.getElementById('s-xvar').value;
+    const yvar     = document.getElementById('s-yvar').value;
+
+    if (xvar === yvar) { alert('X and Y variables must be different.'); return; }
+
+    const deltas = [-4, -2, 0, 2, 4];
+
+    const getLabel = (v, d) => {
+      const sign = d > 0 ? '+' : '';
+      if (d === 0) return 'Base';
+      if (v === 'vacancy')    return sign + d + '%p Vacancy';
+      if (v === 'rentgrowth') return sign + d + '%p Growth';
+      if (v === 'exitcap')    return sign + d + '%p Cap';
+      if (v === 'noi')        return sign + d + '% NOI';
+      return d;
+    };
+
+    const getIRR = (xd, yd) => {
+      let noi = baseNoi, growth = baseGr, exitCap = baseEC;
+      const apply = (v, d) => {
+        if (v === 'vacancy')    noi    = baseNoi * (1 - d / 100);
+        if (v === 'rentgrowth') growth = baseGr + d;
+        if (v === 'noi')        noi    = baseNoi * (1 + d / 100);
+        if (v === 'exitcap')    exitCap = baseEC + d;
+      };
+      apply(xvar, xd);
+      apply(yvar, yd);
+      return computeIRR(buildCashFlows(init, noi, debt, hold, growth, exitCap, sellCost)) * 100;
+    };
+
+    const baseIRR = getIRR(0, 0);
+    let html = `<div style="margin-bottom:10px;font-size:13px;color:var(--text2)">Base IRR: <strong style="color:var(--text)">${fmtPct(baseIRR)}</strong> &nbsp;·&nbsp; Green = above base, Red = below base</div>`;
+    html += '<div style="overflow-x:auto"><table class="sens-table"><thead><tr><th>Y \\ X</th>';
+    deltas.forEach(xd => html += `<th>${getLabel(xvar, xd)}</th>`);
+    html += '</tr></thead><tbody>';
+    deltas.forEach(yd => {
+      html += `<tr><td class="row-label">${getLabel(yvar, yd)}</td>`;
+      deltas.forEach(xd => {
+        const irr  = getIRR(xd, yd);
+        const diff = irr - baseIRR;
+        const cls  = Math.abs(diff) < 0.5 ? 'cell-neutral' : diff > 0 ? 'cell-pos' : 'cell-neg';
+        html += `<td class="${cls}">${fmtPct(irr)}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('sens-table-wrap').innerHTML = html;
+  }
+</script>
 </body>
 </html>
